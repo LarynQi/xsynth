@@ -21,13 +21,13 @@ def main(sound1, sound2, config=HYBRID_3):
     if s1_len > s2_len:
         loops = (s1_len - s2_len) // s2_len
         s2 = np.tile(s2, loops)
-        remainder = s1_len - s2.shape[0]
+        # remainder = s1_len - s2.shape[0]
         # s2 = np.append(s2, s2[:remainder])
         # s2 = np.pad(s2, diff, mode='constant')
     else:
         loops = (s2_len - s1_len) // s1_len
         s1 = np.tile(s1, loops)
-        remainder = s2_len - s1.shape[0]
+        # remainder = s2_len - s1.shape[0]
         # s1 = np.append(s1, s1[:remainder])
     
     n = max(s1.shape[0], s2.shape[0])

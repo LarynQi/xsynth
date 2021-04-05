@@ -14,31 +14,9 @@ class Config():
     def get_configurations(self):
         return list(vars(self).values())
 
-# DEPRECATED
-def get_amplitude(point):
-    real, imag = point.real, point.imag
-    amplitude = np.sqrt((real ** 2) + (imag ** 2))
-    return np.abs(point)
-    return amplitude
-
-# DEPRECATED
-def get_phase(point):
-    real, imag = point.real, point.imag
-    # phase = np.arctan2(imag, real)
-    # if real > 0:
-    #     phase = np.arctan(imag / real)
-    # else:
-    #     phase = np.arctan(imag / real) + np.pi
-    phase = np.angle(point)
-    return phase
-
-# DEPRECATED
-get_amplitude_vectorized = np.vectorize(get_amplitude, otypes=[float])
-get_phase_vectorized = np.vectorize(get_phase, otypes=[float])
-
 def cart_to_pol(spectrum):
     return np.abs(spectrum), np.angle(spectrum)
-    return get_amplitude_vectorized(spectrum), get_phase_vectorized(spectrum) # DEPRECATED
+    # return get_amplitude_vectorized(spectrum), get_phase_vectorized(spectrum) # DEPRECATED
 
 def combine_to_complex(real, imag):
     return complex(real, imag)
@@ -57,10 +35,6 @@ HYBRID_1 = Config(0, 1, 0, 1, 0, 0)
 HYBRID_2 = Config(0, 0, 1, 1, 0, 0.2)
 HYBRID_3 = Config(0.75, 0.25, 0, 0.5, 0.5, 5)
 
-# DEPRECATED
-def next_power_of_2(x):
-    return 1 if not x else 2 ** (x - 1).bit_length()
-
 DS_STORE = '.DS_Store'
 
 def output_path():
@@ -76,3 +50,29 @@ def output_path():
     i = max(indices, default=-1) + 1
 
     return f'./out/out{i}.wav'
+
+######################
+###   DEPRECATED   ###
+######################
+
+def next_power_of_2(x):
+    return 1 if not x else 2 ** (x - 1).bit_length()
+
+def get_amplitude(point):
+    real, imag = point.real, point.imag
+    amplitude = np.sqrt((real ** 2) + (imag ** 2))
+    # return np.abs(point)
+    return amplitude
+
+def get_phase(point):
+    real, imag = point.real, point.imag
+    # phase = np.arctan2(imag, real)
+    # if real > 0:
+    #     phase = np.arctan(imag / real)
+    # else:
+    #     phase = np.arctan(imag / real) + np.pi
+    # phase = np.angle(point)
+    return phase
+
+get_amplitude_vectorized = np.vectorize(get_amplitude, otypes=[float])
+get_phase_vectorized = np.vectorize(get_phase, otypes=[float])
