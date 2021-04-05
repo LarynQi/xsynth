@@ -55,9 +55,9 @@ SOUND_1 = Config(1, 0, 0, 1, 0, 0)
 SOUND_2 = Config(0, 1, 0, 0, 1, 0)
 HYBRID_1 = Config(0, 1, 0, 1, 0, 0)
 HYBRID_2 = Config(0, 0, 1, 1, 0, 0.2)
-HYBRID_3 = Config(0, 0, 1, 0, 1, 20)
+HYBRID_3 = Config(0.75, 0.25, 0, 0.5, 0.5, 5)
 
-# DEPRECAtED
+# DEPRECATED
 def next_power_of_2(x):
     return 1 if not x else 2 ** (x - 1).bit_length()
 

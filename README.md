@@ -31,7 +31,7 @@ Outputs can be found in `xsynth/out`
 3. Run FFT on `s1` and `s2`, returning their spectrum with amplitude and frequency information in the frequency domain. The data is in cartesian (complex) coordinates, `s1_cart` and `s2_cart`
 4. Convert to polar to extract the amplitude and phase individually, returning `s1_amp`, `s1_phase`, `s2_amp`, `s2_phase`.
 5. Filter noise based on threshold, `noise_threshold`
-6. Apply cross synthesis combination to produce the output spectrum, `out_amp` and `out_phase` using the weights `X`, `x`, `Q`, `Y`, `y`:
+6. Apply cross-synthesis combination to produce the output spectrum, `out_amp` and `out_phase` using the weights `X`, `x`, `Q`, `Y`, `y`:
 
 <img src="https://render.githubusercontent.com/render/math?math=out_{amp} = X s1_{amp} %2B x s2_{amp} %2B Q(\sqrt{s1_{amp} s2_{amp}})">
 
@@ -48,10 +48,10 @@ Outputs can be found in `xsynth/out`
 - All the high-level algorithm steps are executed in `xsynth.py`
 - The nitty-gritty of the specific steps such as coordinate conversion and noise filtration is handled in `utils.py`
     - Originally wrote a lot of the mathematical conversion functions myself and vectorized them to apply to numpy arrays, but deprecated them in favor of using the built-in `np.abs` and `np.angle` (for amplitude and phase respectively)
-- The configuration system is also handled in `utils.py`. Users can create new configurations for the cross synthesis by creating new `Config` objects and passing them into `main`.
+- The configuration system is also handled in `utils.py`. Users can create new configurations for the cross-synthesis by creating new `Config` objects and passing them into `main`.
     - `utils.py` also exports a few default configurations: `SOUND_1`, `SOUND_2`, `HYBRID_1`, `HYBRID_2`, `HYBRID_3`.
 - Lastly, auxiliary tasks such as file writing is done `utils.py`
 
 ### Example Outputs
 
-- See the `xsynth/examples` directory
+- See the `xsynth/examples` directory (link)
