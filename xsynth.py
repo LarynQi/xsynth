@@ -1,87 +1,56 @@
 import soundfile as sf
 import numpy as np
 import sys
-import os
 
+from utils import Config, SOUND_1, SOUND_2, HYBRID_1, HYBRID_2, HYBRID_3
 from utils import cart_to_pol, pol_to_cart
-from utils import SOUND_1, SOUND_2, HYBRID_1, HYBRID_2, Config
+from utils import filter_noise
+from utils import output_path
 
-DS_STORE = '.DS_Store'
+def main(sound1, sound2, config=HYBRID_3):
+    print('MUSIC159 - cross synthesis')
+    print('executing...')
+    s1, sr_1 = sf.read(sound1)
+    s2, sr_2 = sf.read(sound2)
 
-def next_power_of_2(x):
-    return 1 if not x else 2 ** (x - 1).bit_length()
-
-def main(sound1, sound2, config=HYBRID_2):
-    print('xsynth.py - cross synthesis')
-    x, srx = sf.read(sound1)
-    h, srh = sf.read(sound2)
-    print(h)
-    if srx != srh:
+    if sr_1 != sr_2:
         sys.exit('Inconsistent sampling rate')
-
-    # n = next_power_of_2(max(x.shape[0], h.shape[0]))
     
-    x_len, h_len = x.shape[0], h.shape[0]
-    if x_len > h_len:
-        loops = (x_len - h_len) // h_len
-        h = np.tile(h, loops)
-        diff = x_len - h.shape[0]
-        # h = np.pad(h, diff, mode='constant')
-    n = max(x.shape[0], h.shape[0])
+    s1_len, s2_len = s1.shape[0], s2.shape[0]
+    
+    if s1_len > s2_len:
+        loops = (s1_len - s2_len) // s2_len
+        s2 = np.tile(s2, loops)
+        remainder = s1_len - s2.shape[0]
+        s2 = np.append(s2, s2[:remainder])
+        # s2 = np.pad(s2, diff, mode='constant')
+    else:
+        loops = (s2_len - s1_len) // s1_len
+        s1 = np.tile(s1, loops)
+        remainder = s2_len - s1.shape[0]
+        s1 = np.append(s1, s1[:remainder])
+    
+    n = max(s1.shape[0], s2.shape[0]) # should be equal after padding
 
-    # sys.exit()
+    s1_cart, s2_cart = np.fft.rfft(s1, n=n), np.fft.rfft(s2, n=n)
 
-    # x_cart, h_cart = np.fft.rfft(x, n=n), np.fft.rfft(h, n=n)
-    x_cart, h_cart = np.fft.rfft(x, n=n), np.fft.rfft(h, n=n)
+    s1_amp, s1_phase = cart_to_pol(s1_cart)
+    s2_amp, s2_phase = cart_to_pol(s2_cart)
 
-    print(h_cart)
-    x_amp, x_phase = cart_to_pol(x_cart)
-    h_amp, h_phase = cart_to_pol(h_cart)
+    X, x, Q, Y, y, noise_threshold = config.get_configurations()
 
-    # X, x, Q, Y, y = 1, 0, 0, 1, 0
-    # X, x, Q, Y, y = 0, 1, 0, 0, 1
-    # X, x, Q, Y, y = 0, 1, 0, 1, 0
-    # X, x, Q, Y, y = 0, 0, 1, 1, 0
+    s2_amp = filter_noise(s2_amp, noise_threshold)
+    s1_amp = filter_noise(s1_amp, noise_threshold)
 
-    # noise = 0.2
-
-    X, x, Q, Y, y, noise = config.get_configurations()
-
-    print(X, x, Q, Y, y)
-    # sys.exit()
-    print(h_amp)
-    h_amp = np.vectorize(lambda val: val if val > noise else 0., otypes=[float])(h_amp)
-    x_amp = np.vectorize(lambda val: val if val > noise else 0., otypes=[float])(x_amp)
-    print(h_amp)
-    # out_amp = (X * x_amp) + (x * h_amp) + (Q * np.sqrt(np.square(x_amp) + np.square(h_amp)))
-    out_amp = (X * x_amp) + (x * h_amp) + (Q * np.sqrt(x_amp * h_amp))
-    out_phase = (Y * x_phase) + (y * h_phase)
-
-    print((out_amp == h_amp).all())
-    print((out_phase == h_phase).all())
+    out_amp = (X * s1_amp) + (x * s2_amp) + (Q * np.sqrt(s1_amp * s2_amp))
+    out_phase = (Y * s1_phase) + (y * s2_phase)
 
     out_cart = pol_to_cart(out_amp, out_phase)
-    print(out_cart)
+
     out = np.fft.irfft(out_cart)
-    out *= 0.5
-    # print((out_cart == x_cart).all())
-    # print(np.fft.irfft(x_cart, n=n))
-    print(out, h)
-    print(out.shape, h.shape)
-    # sys.exit()
-    try:
-        files = os.listdir('out')
-    except FileNotFoundError:
-        os.mkdir('out')
-        files = os.listdir('out')
-    if DS_STORE in files:
-        os.remove(f'./out/{DS_STORE}')
-        files.remove(DS_STORE)
-    indices = map(lambda f: int(f.split('.')[0][-1]), files)
-    i = max(indices, default=-1) + 1
-    sf.write(f'./out/out{i}.wav', out, srx)
+
+    sf.write(output_path(), out, sr_1)
+    print('done!')
 
 if __name__ == '__main__':
-    # main('Beethoven_Symph7.wav', 'radiohead.wav', config=SOUND_2)
-
-    main('samples/Beethoven_Symph7.wav', 'samples/radiohead.wav', config=Config(1, 0, 1, 0, 1, 5))
+    main('samples/Beethoven_Symph7.wav', 'samples/radiohead.wav', SOUND_1)
